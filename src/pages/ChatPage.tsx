@@ -1,25 +1,29 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Send, Sparkles, Plus } from "lucide-react";
+import { Send, Sparkles, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import ChatMessage from "@/components/ChatMessage";
 import ItineraryCard from "@/components/ItineraryCard";
+import ItineraryDetailSheet from "@/components/ItineraryDetailSheet";
 import SuccessModal from "@/components/SuccessModal";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getConversations, saveConversation, savePlan, type Conversation, type Message } from "@/lib/localStorage";
+import { getConversations, saveConversation, type Conversation, type Message } from "@/lib/localStorage";
 
 const ChatPage = () => {
   const [searchParams] = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [showItineraries, setShowItineraries] = useState(false);
-  const [showEnhance, setShowEnhance] = useState(false);
-  const [enhanceInput, setEnhanceInput] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [awaitingFollowUp, setAwaitingFollowUp] = useState(false);
+  const [followUpStep, setFollowUpStep] = useState(0);
+  const [tripData, setTripData] = useState({ destination: "", duration: "", type: "", budget: "" });
+  const [selectedItinerary, setSelectedItinerary] = useState<number | null>(null);
+  const [showDetailSheet, setShowDetailSheet] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Hot queries - Indian destinations
@@ -85,58 +89,90 @@ const ChatPage = () => {
     addUserMessage(messageText);
     setInput("");
 
-    // Simulate AI response
-    setTimeout(() => {
-      addAssistantMessage(
-        "Great! I'm analyzing your preferences... Let me create some amazing itineraries for you!"
-      );
+    // If waiting for follow-up answers
+    if (awaitingFollowUp) {
+      const newTripData = { ...tripData };
       
-      // Show itineraries after a delay
-      setTimeout(() => {
-        setShowItineraries(true);
-        addAssistantMessage(
-          "Here are 3 personalized itineraries I've created for you! Each one offers a unique experience. Take a look and let me know which one interests you the most."
-        );
+      if (followUpStep === 0) {
+        newTripData.duration = messageText;
+        setTripData(newTripData);
+        setFollowUpStep(1);
+        setTimeout(() => {
+          addAssistantMessage("Would you like more cultural, historical, or adventurous experiences?");
+        }, 500);
+      } else if (followUpStep === 1) {
+        newTripData.type = messageText;
+        setTripData(newTripData);
+        setFollowUpStep(2);
+        setTimeout(() => {
+          addAssistantMessage("What is your approximate budget range? (e.g., ₹30,000-₹50,000)");
+        }, 500);
+      } else if (followUpStep === 2) {
+        newTripData.budget = messageText;
+        setTripData(newTripData);
+        setAwaitingFollowUp(false);
+        setFollowUpStep(0);
         
-        // Set follow-up questions
-        setFollowUpQuestions([
-          "Can you add more cultural experiences?",
-          "What about food recommendations?",
-          "Are there any adventure activities?",
-        ]);
-      }, 1500);
-    }, 1000);
+        // Show loading and generate itineraries
+        setTimeout(() => {
+          setIsLoading(true);
+          addAssistantMessage("✨ Creating plans and exploring places...");
+          
+          setTimeout(() => {
+            setIsLoading(false);
+            setShowItineraries(true);
+            addAssistantMessage(
+              "Here are 3 personalized itineraries I've created for you! Each one offers a unique experience."
+            );
+            
+            setFollowUpQuestions([
+              "Can you add more cultural experiences?",
+              "What about food recommendations?",
+              "Are there any adventure activities?",
+            ]);
+          }, 2500);
+        }, 500);
+      }
+    } else {
+      // First message - start follow-up flow
+      setTripData({ ...tripData, destination: messageText });
+      setAwaitingFollowUp(true);
+      setFollowUpStep(0);
+      
+      setTimeout(() => {
+        addAssistantMessage(`Great choice! ${messageText} is amazing! 🌟\n\nWhat's your preferred travel duration? (e.g., 5 days, 1 week)`);
+      }, 800);
+    }
   };
 
-  const handleEnhancePlan = () => {
-    if (!enhanceInput.trim()) return;
-    
-    addUserMessage(`Enhance my plan: ${enhanceInput}`);
-    setEnhanceInput("");
-    setShowEnhance(false);
+  const handleEnhancePlan = (cardIndex: number, customInput: string) => {
+    addUserMessage(`Enhance plan ${cardIndex + 1}: ${customInput}`);
     
     setTimeout(() => {
-      addAssistantMessage(
-        "Perfect! I've updated your itinerary with your preferences. Check out the enhanced plans above!"
-      );
-      setShowItineraries(true);
-    }, 1000);
+      setIsLoading(true);
+      addAssistantMessage("✨ Updating your itinerary...");
+      
+      setTimeout(() => {
+        setIsLoading(false);
+        addAssistantMessage(
+          `Perfect! I've updated the ${mockItineraries[cardIndex].title} plan with your preferences.`
+        );
+      }, 1500);
+    }, 500);
   };
 
-  const handleFinalizePlan = () => {
-    // Save to localStorage
+  const handleFinalizePlan = (cardIndex: number) => {
     const conversation: Conversation = {
       id: Date.now().toString(),
-      title: messages[0]?.content.slice(0, 50) || "Travel Plan",
+      title: `${tripData.destination || 'Travel'} - ${mockItineraries[cardIndex].title}`,
       messages,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
     saveConversation(conversation);
 
-    addAssistantMessage("✅ Plan saved successfully.");
+    addAssistantMessage(`✅ Your ${mockItineraries[cardIndex].title} has been finalized and saved!`);
     setShowSuccess(true);
-    setShowItineraries(false);
   };
 
   const mockItineraries = [
@@ -144,38 +180,128 @@ const ChatPage = () => {
       title: "Cultural Explorer",
       days: 5,
       budget: "₹60,000-₹90,000",
-      highlights: [
-        "Visit ancient temples and historical sites",
-        "Traditional cooking class experience",
-        "Local market tour and shopping",
-        "Heritage walk through old quarters",
-        "Attend a classical dance performance",
-      ],
+      dayPlans: [
+        {
+          day: 1,
+          date: "Feb 15",
+          morning: "Visit Basilica of Bom Jesus and Se Cathedral",
+          afternoon: "Explore Old Goa heritage sites",
+          evening: "Sunset at Miramar Beach"
+        },
+        {
+          day: 2,
+          date: "Feb 16",
+          morning: "Tour Fontainhas Latin Quarter",
+          afternoon: "Traditional Goan cooking class",
+          evening: "Attend Fado music performance"
+        },
+        {
+          day: 3,
+          date: "Feb 17",
+          morning: "Visit Shantadurga Temple",
+          afternoon: "Spice plantation tour",
+          evening: "Local market shopping at Anjuna"
+        },
+        {
+          day: 4,
+          date: "Feb 18",
+          morning: "Explore Chapora Fort",
+          afternoon: "Heritage walk through Panjim",
+          evening: "River cruise on Mandovi"
+        },
+        {
+          day: 5,
+          date: "Feb 19",
+          morning: "Visit Cabo de Rama Fort",
+          afternoon: "Beach time at Palolem",
+          evening: "Farewell dinner with Goan cuisine"
+        }
+      ]
     },
     {
       title: "Adventure Seeker",
       days: 5,
       budget: "₹75,000-₹1,10,000",
-      highlights: [
-        "Hiking and trekking adventures",
-        "Water sports and beach activities",
-        "Wildlife safari experience",
-        "Rock climbing and rappelling",
-        "River rafting expedition",
-      ],
+      dayPlans: [
+        {
+          day: 1,
+          date: "Feb 15",
+          morning: "Scuba diving at Grande Island",
+          afternoon: "Jet skiing at Calangute Beach",
+          evening: "Beach volleyball and bonfire"
+        },
+        {
+          day: 2,
+          date: "Feb 16",
+          morning: "Parasailing at Candolim",
+          afternoon: "Kayaking in backwaters",
+          evening: "Night trek to Dudhsagar Falls base"
+        },
+        {
+          day: 3,
+          date: "Feb 17",
+          morning: "Trek to Dudhsagar Waterfall",
+          afternoon: "Swimming at natural pools",
+          evening: "Wildlife spotting at Bhagwan Mahavir Sanctuary"
+        },
+        {
+          day: 4,
+          date: "Feb 18",
+          morning: "White water rafting on Mhadei River",
+          afternoon: "Rock climbing and rappelling",
+          evening: "Beach camping at Agonda"
+        },
+        {
+          day: 5,
+          date: "Feb 19",
+          morning: "Surfing lessons at Ashwem",
+          afternoon: "ATV ride through coastal trails",
+          evening: "Sunset cruise with dolphin spotting"
+        }
+      ]
     },
     {
       title: "Relaxation Retreat",
       days: 5,
       budget: "₹90,000-₹1,35,000",
-      highlights: [
-        "Luxury spa and wellness treatments",
-        "Beachfront resort stay",
-        "Sunset cruise and fine dining",
-        "Yoga and meditation sessions",
-        "Private beach access and amenities",
-      ],
-    },
+      dayPlans: [
+        {
+          day: 1,
+          date: "Feb 15",
+          morning: "Arrival and resort check-in",
+          afternoon: "Ayurvedic spa session",
+          evening: "Sunset yoga at beach"
+        },
+        {
+          day: 2,
+          date: "Feb 16",
+          morning: "Meditation and pranayama",
+          afternoon: "Luxury spa treatments",
+          evening: "Private beach dinner"
+        },
+        {
+          day: 3,
+          date: "Feb 17",
+          morning: "Sunrise beach walk",
+          afternoon: "Pool relaxation and massage",
+          evening: "Fine dining at beachfront restaurant"
+        },
+        {
+          day: 4,
+          date: "Feb 18",
+          morning: "Couples spa therapy",
+          afternoon: "Private yacht cruise",
+          evening: "Wine tasting and live music"
+        },
+        {
+          day: 5,
+          date: "Feb 19",
+          morning: "Farewell yoga session",
+          afternoon: "Leisurely beach time",
+          evening: "Candlelight dinner by the sea"
+        }
+      ]
+    }
   ];
 
   return (
@@ -214,6 +340,18 @@ const ChatPage = () => {
                 <ChatMessage key={message.id} role={message.role} content={message.content} />
               ))}
 
+              {/* Loading Animation */}
+              {isLoading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-3 text-primary my-4"
+                >
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm">Planning your perfect itinerary...</span>
+                </motion.div>
+              )}
+
               {/* Itinerary Cards */}
               {showItineraries && (
                 <motion.div
@@ -226,54 +364,16 @@ const ChatPage = () => {
                       <ItineraryCard
                         key={index}
                         {...itinerary}
+                        cardIndex={index}
                         onViewDetails={() => {
-                          addAssistantMessage(
-                            `Great choice! The ${itinerary.title} plan includes:\n\n${itinerary.highlights.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\nWould you like to enhance this plan or finalize it?`
-                          );
+                          setSelectedItinerary(index);
+                          setShowDetailSheet(true);
                         }}
-                        onEnhance={() => setShowEnhance(true)}
-                        onFinalize={handleFinalizePlan}
+                        onEnhance={handleEnhancePlan}
+                        onFinalize={() => handleFinalizePlan(index)}
                       />
                     ))}
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 justify-center mt-6">
-                    <Button
-                      onClick={() => setShowEnhance(!showEnhance)}
-                      variant="outline"
-                      className="rounded-xl"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Enhance Plan
-                    </Button>
-                    <Button
-                      onClick={handleFinalizePlan}
-                      className="rounded-xl bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Finalize Plan
-                    </Button>
-                  </div>
-
-                  {/* Enhance Input */}
-                  {showEnhance && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="mt-4 flex gap-2"
-                    >
-                      <Input
-                        value={enhanceInput}
-                        onChange={(e) => setEnhanceInput(e.target.value)}
-                        placeholder="Add custom places or preferences..."
-                        className="rounded-xl"
-                      />
-                      <Button onClick={handleEnhancePlan} className="rounded-xl">
-                        Add
-                      </Button>
-                    </motion.div>
-                  )}
                 </motion.div>
               )}
 
@@ -333,21 +433,32 @@ const ChatPage = () => {
             Trending Queries
           </h3>
           <div className="space-y-3">
-            {hotQueries.map((query, index) => (
-              <motion.button
-                key={index}
-                whileHover={{ scale: 1.02, x: 4 }}
-                onClick={() => handleSendMessage(query)}
-                className="w-full text-left p-3 bg-card rounded-xl shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-medium)] transition-all text-sm"
-              >
-                {query}
-              </motion.button>
-            ))}
+                {hotQueries.map((query, index) => (
+                  <motion.button
+                    key={index}
+                    whileHover={{ scale: 1.02, x: 4 }}
+                    onClick={() => {
+                      setInput(query);
+                      setTimeout(() => handleSendMessage(query), 100);
+                    }}
+                    className="w-full text-left p-3 bg-card rounded-xl shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-medium)] transition-all text-sm"
+                  >
+                    {query}
+                  </motion.button>
+                ))}
           </div>
         </div>
       </div>
 
       <SuccessModal isOpen={showSuccess} onClose={() => setShowSuccess(false)} />
+      
+      {selectedItinerary !== null && (
+        <ItineraryDetailSheet
+          isOpen={showDetailSheet}
+          onClose={() => setShowDetailSheet(false)}
+          {...mockItineraries[selectedItinerary]}
+        />
+      )}
     </div>
   );
 };

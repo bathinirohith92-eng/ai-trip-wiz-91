@@ -9,22 +9,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import heroImage from "@/assets/hero-tropical.jpg";
-import europeImg from "@/assets/dest-europe.jpg";
-import keralaImg from "@/assets/dest-kerala.jpg";
-import baliImg from "@/assets/dest-bali.jpg";
-import kashmirImg from "@/assets/dest-kashmir.jpg";
-import vietnamImg from "@/assets/dest-vietnam.jpg";
+import jaipurImg from "@/assets/dest-jaipur.jpg";
+import lehImg from "@/assets/dest-leh.jpg";
+import goaImg from "@/assets/dest-goa.jpg";
+import andamanImg from "@/assets/dest-andaman.jpg";
+import rishikeshImg from "@/assets/dest-rishikesh.jpg";
+import varanasiImg from "@/assets/dest-varanasi.jpg";
+import WhyChooseSection from "@/components/WhyChooseSection";
+import MiniChatBot from "@/components/MiniChatBot";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   const destinations = [
-    { name: "Europe", image: europeImg },
-    { name: "Kerala", image: keralaImg },
-    { name: "Bali", image: baliImg },
-    { name: "Kashmir", image: kashmirImg },
-    { name: "Vietnam", image: vietnamImg },
+    { name: "Jaipur", image: jaipurImg },
+    { name: "Leh", image: lehImg },
+    { name: "Goa", image: goaImg },
+    { name: "Andaman", image: andamanImg },
+    { name: "Rishikesh", image: rishikeshImg },
+    { name: "Varanasi", image: varanasiImg },
   ];
 
   const tripTypes = [
@@ -73,7 +77,7 @@ const LandingPage = () => {
             className="font-serif text-5xl md:text-7xl text-white mb-4 drop-shadow-2xl"
             style={{ fontFamily: "'Dancing Script', cursive" }}
           >
-            Kerala Tour Packages
+            Indian Tour Planner
           </motion.h1>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -103,7 +107,7 @@ const LandingPage = () => {
             </div>
             <Button
               onClick={handleSearch}
-              className="h-14 px-8 rounded-full text-lg font-semibold bg-gradient-to-r from-primary to-sunset hover:from-sunset hover:to-primary shadow-[var(--shadow-medium)] hover:shadow-[var(--shadow-glow)] transition-all"
+              className="h-14 px-8 rounded-full text-lg font-semibold bg-gradient-to-r from-primary to-secondary hover:opacity-90 shadow-[var(--shadow-medium)] hover:shadow-[var(--shadow-glow)] transition-all"
             >
               Search
             </Button>
@@ -117,13 +121,20 @@ const LandingPage = () => {
             className="flex items-center justify-center gap-4 mt-8 flex-wrap"
           >
             {tripTypes.map((type, index) => (
-              <TripTypeButton
+              <motion.div
                 key={type.label}
-                icon={type.icon}
-                label={type.label}
-                badge={type.badge}
-                onClick={() => navigate(`/chat?type=${type.label.toLowerCase()}`)}
-              />
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6 + index * 0.05 }}
+                className="scale-[0.8]"
+              >
+                <TripTypeButton
+                  icon={type.icon}
+                  label={type.label}
+                  badge={type.badge}
+                  onClick={() => navigate(`/chat?type=${type.label.toLowerCase()}`)}
+                />
+              </motion.div>
             ))}
           </motion.div>
         </motion.div>
@@ -138,13 +149,13 @@ const LandingPage = () => {
             viewport={{ once: true }}
             className="mb-12"
           >
-            <h2 className="text-4xl font-bold mb-3">Top Trending Destinations</h2>
+            <h2 className="text-4xl font-bold mb-3">Trending Indian Destinations</h2>
             <p className="text-muted-foreground text-lg">
-              Explore the hottest travel spots around the globe.
+              Discover the most popular travel spots across incredible India
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             {destinations.map((dest, index) => (
               <DestinationCard
                 key={dest.name}
@@ -156,6 +167,12 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Why Choose Section */}
+      <WhyChooseSection />
+
+      {/* Mini Chatbot */}
+      <MiniChatBot />
     </div>
   );
 };

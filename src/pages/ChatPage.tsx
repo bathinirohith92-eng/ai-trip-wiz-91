@@ -22,13 +22,13 @@ const ChatPage = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Hot queries
+  // Hot queries - Indian destinations
   const hotQueries = [
-    "Plan a 5-day trip to Bali",
-    "Romantic honeymoon in Kerala",
-    "Adventure tour in Vietnam",
-    "Luxury Europe vacation",
-    "Budget-friendly Kashmir trip",
+    "5-day adventure in Leh Ladakh",
+    "Romantic week in Goa beaches",
+    "Cultural tour of Rajasthan",
+    "Spiritual journey to Varanasi",
+    "Beach paradise in Andaman",
   ];
 
   // Follow-up questions
@@ -143,31 +143,37 @@ const ChatPage = () => {
     {
       title: "Cultural Explorer",
       days: 5,
-      budget: "$800-$1200",
+      budget: "₹60,000-₹90,000",
       highlights: [
         "Visit ancient temples and historical sites",
         "Traditional cooking class experience",
         "Local market tour and shopping",
+        "Heritage walk through old quarters",
+        "Attend a classical dance performance",
       ],
     },
     {
       title: "Adventure Seeker",
       days: 5,
-      budget: "$1000-$1500",
+      budget: "₹75,000-₹1,10,000",
       highlights: [
         "Hiking and trekking adventures",
         "Water sports and beach activities",
         "Wildlife safari experience",
+        "Rock climbing and rappelling",
+        "River rafting expedition",
       ],
     },
     {
       title: "Relaxation Retreat",
       days: 5,
-      budget: "$1200-$1800",
+      budget: "₹90,000-₹1,35,000",
       highlights: [
         "Luxury spa and wellness treatments",
         "Beachfront resort stay",
         "Sunset cruise and fine dining",
+        "Yoga and meditation sessions",
+        "Private beach access and amenities",
       ],
     },
   ];
@@ -225,6 +231,8 @@ const ChatPage = () => {
                             `Great choice! The ${itinerary.title} plan includes:\n\n${itinerary.highlights.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\nWould you like to enhance this plan or finalize it?`
                           );
                         }}
+                        onEnhance={() => setShowEnhance(true)}
+                        onFinalize={handleFinalizePlan}
                       />
                     ))}
                   </div>
@@ -241,7 +249,7 @@ const ChatPage = () => {
                     </Button>
                     <Button
                       onClick={handleFinalizePlan}
-                      className="rounded-xl bg-gradient-to-r from-primary to-sunset hover:from-sunset hover:to-primary"
+                      className="rounded-xl bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
                       Finalize Plan
@@ -310,7 +318,7 @@ const ChatPage = () => {
               />
               <Button
                 onClick={() => handleSendMessage()}
-                className="rounded-2xl px-8 bg-gradient-to-r from-primary to-sunset hover:from-sunset hover:to-primary shadow-[var(--shadow-medium)]"
+                className="rounded-2xl px-8 bg-gradient-to-r from-primary to-secondary hover:opacity-90 shadow-[var(--shadow-medium)]"
               >
                 <Send className="w-5 h-5" />
               </Button>
@@ -319,10 +327,10 @@ const ChatPage = () => {
         </div>
 
         {/* Hot Queries Sidebar - 30% */}
-        <div className="w-[30%] border-l border-border bg-muted/30 p-6 overflow-y-auto">
+        <div className="w-[30%] border-l border-border bg-muted/30 p-6 overflow-y-auto h-full">
           <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            Hot Queries
+            Trending Queries
           </h3>
           <div className="space-y-3">
             {hotQueries.map((query, index) => (
@@ -330,9 +338,9 @@ const ChatPage = () => {
                 key={index}
                 whileHover={{ scale: 1.02, x: 4 }}
                 onClick={() => handleSendMessage(query)}
-                className="w-full text-left p-4 bg-card rounded-2xl shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-medium)] transition-all"
+                className="w-full text-left p-3 bg-card rounded-xl shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-medium)] transition-all text-sm"
               >
-                <p className="text-sm">{query}</p>
+                {query}
               </motion.button>
             ))}
           </div>

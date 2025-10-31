@@ -126,3 +126,27 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar:hover::-webkit-scrollbar {
+    display: block;
+    width: 4px;
+  }
+  
+  .hide-scrollbar:hover::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .hide-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.3);
+    border-radius: 10px;
+  }
+}

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Clock, IndianRupee, Sparkles, Eye } from "lucide-react";
+import { Clock, IndianRupee, Sparkles, Eye, Heart, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,10 @@ interface ItineraryCardProps {
   onEnhance: (cardIndex: number, customInput: string) => void;
   onFinalize: () => void;
   cardIndex: number;
+  isLiked?: boolean;
+  isCompared?: boolean;
+  onLike?: () => void;
+  onCompare?: () => void;
 }
 
 const ItineraryCard = ({
@@ -32,6 +36,10 @@ const ItineraryCard = ({
   onEnhance,
   onFinalize,
   cardIndex,
+  isLiked = false,
+  isCompared = false,
+  onLike,
+  onCompare,
 }: ItineraryCardProps) => {
   const [showEnhanceInput, setShowEnhanceInput] = useState(false);
   const [enhanceText, setEnhanceText] = useState("");
@@ -47,15 +55,39 @@ const ItineraryCard = ({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.05, y: -8 }}
+      whileHover={{ scale: 1.02, y: -4 }}
       transition={{ type: "spring", stiffness: 300 }}
       className="flex-shrink-0 w-96"
     >
       <div className="space-y-3">
-        <Card className="h-[500px] flex flex-col p-6 shadow-[var(--shadow-medium)] hover:shadow-[var(--shadow-strong)] transition-all border-2 hover:border-primary/30 rounded-3xl bg-gradient-to-br from-card to-card/50">
+        <Card className="h-[500px] flex flex-col p-6 shadow-lg hover:shadow-xl transition-all border-2 hover:border-primary/30 rounded-3xl bg-gradient-to-br from-card to-card/50 relative">
+          {/* Action Icons - Top Right */}
+          <div className="absolute top-4 right-4 flex gap-2 z-10">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={onLike}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                isLiked ? 'bg-red-500 text-white' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={onCompare}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                isCompared ? 'bg-primary text-white' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              <Scale className="w-4 h-4" />
+            </motion.button>
+          </div>
+
           {/* Header */}
           <div className="mb-4 pb-4 border-b border-border">
-            <h3 className="text-xl font-bold line-clamp-2 mb-3">{title}</h3>
+            <h3 className="text-xl font-bold line-clamp-2 mb-3 pr-20">{title}</h3>
             
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1 text-muted-foreground">

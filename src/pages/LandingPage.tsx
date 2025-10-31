@@ -40,11 +40,7 @@ const LandingPage = () => {
   ];
 
   const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/chat?query=${encodeURIComponent(searchQuery)}`);
-    } else {
-      navigate("/chat");
-    }
+    navigate("/chat");
   };
 
   return (

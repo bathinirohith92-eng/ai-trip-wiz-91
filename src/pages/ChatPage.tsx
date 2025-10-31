@@ -28,6 +28,9 @@ const ChatPage = () => {
   const [likedPlans, setLikedPlans] = useState<number[]>([]);
   const [comparePlans, setComparePlans] = useState<number[]>([]);
   const [trendingScores, setTrendingScores] = useState<Record<string, number>>({});
+  const [showLikedPopup, setShowLikedPopup] = useState(false);
+  const [showComparePopup, setShowComparePopup] = useState(false);
+  const [showBookingFlow, setShowBookingFlow] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Hot queries - Indian destinations with scores
@@ -44,8 +47,14 @@ const ChatPage = () => {
     (trendingScores[b] || 0) - (trendingScores[a] || 0)
   );
 
-  // Follow-up questions
-  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
+  // Follow-up questions - show for every message
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([
+    "Tell me about local cuisine",
+    "What are the best photo spots?",
+    "Any adventure activities nearby?",
+    "Best time to visit?",
+    "Local festivals and events?"
+  ]);
 
   const loadingMessages = [
     "Translating user language → English",
@@ -155,13 +164,13 @@ const ChatPage = () => {
               "Here are 3 personalized itineraries I've created for you! Each one offers a unique experience."
             );
             
-            setFollowUpQuestions([
-              "Can you add more cultural experiences?",
-              "What about food recommendations?",
-              "Are there any adventure activities?",
-              "Tell me about local cuisine",
-              "What are the best photo spots?"
-            ]);
+            // Start booking flow automatically
+            setTimeout(() => {
+              setShowBookingFlow(true);
+              addAssistantMessage(
+                "Perfect! Now let's arrange your travel. Would you like to book flights, buses, or trains? 🚀"
+              );
+            }, 2000);
           }, 14000);
         }, 500);
       }
@@ -208,11 +217,17 @@ const ChatPage = () => {
   };
 
   const handleTrendingClick = (query: string) => {
+    // Populate input instead of sending directly
     setInput(query);
     setTrendingScores(prev => ({
       ...prev,
       [query]: (prev[query] || 0) + 1
     }));
+  };
+
+  const handleFollowUpClick = (question: string) => {
+    // Populate input instead of sending directly
+    setInput(question);
   };
 
   const handleLikePlan = (index: number) => {
@@ -362,28 +377,28 @@ const ChatPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Simple Header with Back Button and Profile */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="flex items-center justify-between px-6 py-4">
+      {/* Compact Header - Only Back Button and Profile */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-4 py-2.5">
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => navigate('/')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-1.5"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Back</span>
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
             </div>
-            <span className="text-sm font-semibold">Anish</span>
+            <span className="text-xs font-semibold">Anish</span>
           </div>
         </div>
       </div>
       
-      <div className="pt-20 h-screen flex">
+      <div className="pt-12 h-screen flex">
         {/* Main Chat Area - 70% */}
         <div className="flex-1 flex flex-col">
           {/* Messages Area */}
@@ -461,18 +476,18 @@ const ChatPage = () => {
             </div>
           </div>
 
-          {/* Follow-up Questions - Horizontal Scroll */}
-          {followUpQuestions.length > 0 && (
-            <div className="border-t border-border px-6 py-3 bg-muted/20">
+          {/* Follow-up Questions - Always visible, Horizontal Scroll */}
+          {messages.length > 0 && (
+            <div className="border-t border-border px-4 py-2 bg-muted/10">
               <div className="max-w-4xl mx-auto overflow-x-auto hide-scrollbar">
-                <div className="flex gap-2 min-w-max pb-1">
+                <div className="flex gap-2 min-w-max">
                   {followUpQuestions.map((question, index) => (
                     <Button
                       key={index}
                       variant="outline"
                       size="sm"
-                      onClick={() => handleSendMessage(question)}
-                      className="rounded-full shadow-sm hover:shadow-md whitespace-nowrap"
+                      onClick={() => handleFollowUpClick(question)}
+                      className="rounded-full text-xs px-3 py-1 h-7 whitespace-nowrap border-primary/30 hover:bg-primary/5"
                     >
                       {question}
                     </Button>
@@ -482,9 +497,9 @@ const ChatPage = () => {
             </div>
           )}
 
-          {/* Input Area - Compact */}
-          <div className="border-t border-border p-4 bg-card">
-            <div className="max-w-4xl mx-auto flex gap-3 items-end">
+          {/* Input Area - More Compact */}
+          <div className="border-t border-border p-3 bg-card">
+            <div className="max-w-4xl mx-auto flex gap-2 items-end">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -495,12 +510,12 @@ const ChatPage = () => {
                   }
                 }}
                 placeholder="Type your message..."
-                className="resize-none rounded-xl h-12 py-3"
+                className="resize-none rounded-xl h-10 py-2 text-sm"
                 rows={1}
               />
               <Button
                 onClick={() => handleSendMessage()}
-                className="rounded-xl px-6 h-12 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                className="rounded-xl px-5 h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
               >
                 <Send className="w-4 h-4" />
               </Button>
@@ -509,42 +524,43 @@ const ChatPage = () => {
         </div>
 
         {/* Right Sidebar - 30% Split */}
-        <div className="w-[30%] border-l border-border bg-muted/20 overflow-y-auto h-full flex flex-col">
-          {/* Top Half - Action Buttons */}
-          <div className="p-6 border-b border-border">
-            <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
+        <div className="w-[30%] border-l border-border bg-muted/10 overflow-y-auto h-full flex flex-col">
+          {/* Top Half - Quick Actions & Chat History */}
+          <div className="p-4 border-b border-border">
+            <h3 className="text-xs font-bold mb-3 flex items-center gap-1.5 text-muted-foreground uppercase tracking-wide">
               Quick Actions
             </h3>
             <div className="space-y-2">
               <Button
                 variant="outline"
-                className="w-full justify-start rounded-xl"
-                onClick={() => {/* TODO: Show liked plans */}}
+                size="sm"
+                className="w-full justify-start rounded-lg text-xs h-9"
+                onClick={() => setShowLikedPopup(true)}
               >
-                <Heart className="w-4 h-4 mr-2" />
+                <Heart className="w-3.5 h-3.5 mr-2" />
                 Liked Plans ({likedPlans.length})
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start rounded-xl"
-                onClick={() => {/* TODO: Show compare */}}
+                size="sm"
+                className="w-full justify-start rounded-lg text-xs h-9"
+                onClick={() => setShowComparePopup(true)}
               >
-                <Scale className="w-4 h-4 mr-2" />
+                <Scale className="w-3.5 h-3.5 mr-2" />
                 Compare Plans ({comparePlans.length})
               </Button>
             </div>
             
-            {/* Chat History */}
+            {/* Chat History - Only 2 */}
             {conversations.length > 0 && (
               <>
-                <h4 className="text-xs font-semibold mt-6 mb-3 text-muted-foreground">Recent Chats</h4>
-                <div className="space-y-2">
+                <h4 className="text-xs font-bold mt-5 mb-2 text-muted-foreground uppercase tracking-wide">Recent Chats</h4>
+                <div className="space-y-1.5">
                   {conversations.slice(0, 2).map((conv) => (
                     <motion.button
                       key={conv.id}
                       whileHover={{ scale: 1.01 }}
-                      className="w-full text-left p-2.5 bg-card rounded-lg shadow-sm hover:shadow-md transition-all text-xs truncate"
+                      className="w-full text-left p-2 bg-card rounded-lg shadow-sm hover:shadow transition-all text-xs truncate border border-border/50"
                       onClick={() => {
                         setMessages(conv.messages);
                         setShowItineraries(false);
@@ -559,23 +575,22 @@ const ChatPage = () => {
           </div>
 
           {/* Bottom Half - Trending Queries */}
-          <div className="flex-1 p-6">
-            <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
+          <div className="flex-1 p-4">
+            <h3 className="text-xs font-bold mb-3 flex items-center gap-1.5 text-muted-foreground uppercase tracking-wide">
               Trending Queries
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {hotQueries.map((query, index) => (
                 <motion.button
                   key={index}
                   whileHover={{ scale: 1.01, x: 2 }}
                   onClick={() => handleTrendingClick(query)}
-                  className="w-full text-left p-2.5 bg-card rounded-lg shadow-sm hover:shadow-md transition-all text-xs"
+                  className="w-full text-left p-2 bg-card rounded-lg shadow-sm hover:shadow transition-all text-xs border border-border/50"
                 >
                   <div className="flex items-center justify-between">
                     <span>{query}</span>
                     {trendingScores[query] && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">
                         {trendingScores[query]}
                       </span>
                     )}
@@ -595,6 +610,93 @@ const ChatPage = () => {
           onClose={() => setShowDetailSheet(false)}
           {...mockItineraries[selectedItinerary]}
         />
+      )}
+
+      {/* Liked Plans Popup */}
+      {showLikedPopup && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-card rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+          >
+            <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Heart className="w-5 h-5 text-primary" />
+                Liked Plans
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowLikedPopup(false)}>
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+            </div>
+            <div className="p-4">
+              {likedPlans.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No liked plans yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {likedPlans.map((index) => (
+                    <div key={index} className="p-4 border border-border rounded-lg">
+                      <h3 className="font-semibold mb-2">{mockItineraries[index].title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {mockItineraries[index].days} days • {mockItineraries[index].budget}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Compare Plans Popup */}
+      {showComparePopup && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-card rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-y-auto"
+          >
+            <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Scale className="w-5 h-5 text-primary" />
+                Compare Plans
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowComparePopup(false)}>
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+            </div>
+            <div className="p-4">
+              {comparePlans.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No plans selected for comparison</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {comparePlans.map((index) => (
+                    <div key={index} className="p-4 border border-border rounded-lg">
+                      <h3 className="font-semibold mb-3">{mockItineraries[index].title}</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Duration:</span>
+                          <span className="font-medium">{mockItineraries[index].days} days</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Budget:</span>
+                          <span className="font-medium">{mockItineraries[index].budget}</span>
+                        </div>
+                        <div className="pt-2 border-t border-border">
+                          <span className="text-muted-foreground">Activities:</span>
+                          <p className="text-xs mt-1">{mockItineraries[index].dayPlans.length} day plan</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );

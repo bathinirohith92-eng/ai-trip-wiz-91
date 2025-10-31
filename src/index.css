@@ -17,19 +17,19 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 20%;
 
-    /* Deep teal for brand gradient */
-    --primary: 180 65% 45%;
+    /* Ocean Blue - Primary travel color */
+    --primary: 205 87% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Saffron/golden for brand gradient */
-    --secondary: 35 90% 55%;
+    /* Warm Coral - Secondary travel color */
+    --secondary: 15 85% 60%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 210 40% 96%;
     --muted-foreground: 220 15% 50%;
 
-    /* Sky blue accent */
-    --accent: 200 95% 65%;
+    /* Light sky accent */
+    --accent: 205 87% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -41,17 +41,11 @@ All colors MUST be HSL.
 
     --radius: 1rem;
     
-    /* Custom travel theme */
-    --tropical: 180 65% 45%;
-    --sunset: 35 90% 55%;
-    --ocean: 210 100% 60%;
-    --sand: 40 60% 85%;
-    
-    /* Gradients - teal to saffron */
-    --gradient-brand: linear-gradient(135deg, hsl(180 65% 45%) 0%, hsl(35 90% 55%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(200 95% 65%) 0%, hsl(180 65% 45%) 100%);
+    /* Simple 2-color travel gradients */
+    --gradient-brand: linear-gradient(135deg, hsl(205 87% 45%) 0%, hsl(15 85% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(205 87% 45%) 0%, hsl(205 87% 65%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
-    --gradient-cta: linear-gradient(135deg, hsl(180 65% 45%) 0%, hsl(35 90% 55%) 100%);
+    --gradient-cta: linear-gradient(135deg, hsl(205 87% 45%) 0%, hsl(15 85% 60%) 100%);
     
     /* Shadows */
     --shadow-soft: 0 4px 20px -2px hsl(220 15% 50% / 0.1);

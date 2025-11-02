@@ -8,6 +8,8 @@ import ChatPage from "./pages/ChatPage";
 import FlightBooking from "./pages/FlightBooking";
 import BusBooking from "./pages/BusBooking";
 import MapView from "./pages/MapView";
+import HolidayPage from "./pages/HolidayPage";
+import DestinationDetailPage from "./pages/DestinationDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/flights" element={<FlightBooking />} />
           <Route path="/bus" element={<BusBooking />} />
           <Route path="/map" element={<MapView />} />
+          <Route path="/holiday" element={<HolidayPage />} />
+          <Route path="/destination/:id" element={<DestinationDetailPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

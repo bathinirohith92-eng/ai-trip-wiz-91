@@ -1,4 +1,4 @@
-import { Home, Plane, Bus, User } from "lucide-react";
+import { Home, Plane, Bus, User, Palmtree } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getUser } from "@/lib/localStorage";
@@ -11,6 +11,7 @@ const Navbar = () => {
     { icon: Home, label: "Home", path: "/" },
     { icon: Plane, label: "Flights", path: "/flights" },
     { icon: Bus, label: "Bus", path: "/bus" },
+    { icon: Palmtree, label: "Holiday", path: "/holiday" },
   ];
 
   return (

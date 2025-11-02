@@ -12,6 +12,7 @@ const Navbar = () => {
     { icon: Plane, label: "Flights", path: "/flights" },
     { icon: Bus, label: "Bus", path: "/bus" },
     { icon: Palmtree, label: "Holiday", path: "/holiday" },
+    { icon: User, label: "Know More", path: "/know-more" },
   ];
 
   return (
